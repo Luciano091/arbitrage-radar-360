@@ -11,7 +11,7 @@ Um terminal institucional para monitoramento de arbitragem de criptomoedas em te
 
 > **Demonstração Visual**
 > 
-> ![Dashboard Preview](./preview.png)
+> ![Dashboard Preview](./preview.gif)
 
 ## 🚀 Arquitetura e Fluxo de Dados
 
