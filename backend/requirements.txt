@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+redis
+ccxt
+asyncpg  # <--- Adicione esta linha aqui

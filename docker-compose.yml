@@ -1,0 +1,71 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: arbitrage_redis
+    command: redis-server --requirepass devpassword
+    networks:
+      - arbitrage-net
+
+  api:
+    build: ./backend
+    container_name: arbitrage_api
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    networks:
+      - arbitrage-net
+    depends_on:
+      - redis
+      - db  # <--- Adicionado para esperar o banco
+
+  binance_worker:
+    build: ./backend
+    container_name: binance_worker
+    command: python -u -m workers.binance_worker  # Adicionado comando se faltava
+    networks:
+      - arbitrage-net
+    depends_on:
+      - redis
+
+  kraken_worker:
+    build: ./backend
+    container_name: kraken_worker
+    command: python -u -m workers.kraken_worker
+    networks:
+      - arbitrage-net
+    depends_on:
+      - redis
+
+  analyzer_worker:
+    build: ./backend
+    container_name: analyzer_worker
+    command: python -u -m workers.analyzer_worker
+    networks:
+      - arbitrage-net
+    depends_on:
+      - redis
+      - db  # <--- Fundamental para o gráfico!
+
+  # AGORA O DB ESTÁ NO LUGAR CERTO (DENTRO DE SERVICES)
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: arbitrage_db
+    ports:
+      - "5432:5432"
+    networks:
+      - arbitrage-net  # <--- Adicionado na rede
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  arbitrage-net:
+    driver: bridge
